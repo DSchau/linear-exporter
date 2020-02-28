@@ -1,8 +1,8 @@
-require('dotenv').config()
-const axios = require('axios')
-const fs = require('fs-extra')
+require('dotenv').config();
+const axios = require('axios');
+const fs = require('fs-extra');
 
-const template = require('./template')
+const template = require('./template');
 
 async function exportDataFromLinear() {
   const issueFragment = `
@@ -31,11 +31,14 @@ async function exportDataFromLinear() {
         name
       }
     }
-  `
-  let after = {}
-  let issues = []
+  `;
+  let after = {};
+  let issues = [];
   while (true) {
-    const { data: postData } = await axios.post(`https://api.linear.app/graphql`, { "query": `
+    const { data: postData } = await axios.post(
+      `https://api.linear.app/graphql`,
+      {
+        query: `
     {
       issues(first: 50${after.id ? `, after: "${after.id}"` : ``}) {
         nodes {
@@ -49,14 +52,19 @@ async function exportDataFromLinear() {
         }
       }
     }
-    ` }, {
-      headers: {
-        Authorization: process.env.API_KEY
-      } 
-    })
+    `
+      },
+      {
+        headers: {
+          Authorization: process.env.API_KEY
+        }
+      }
+    );
 
-    issues = issues.concat(postData.data ? postData.data.issues.nodes : [])
-    const latestAfter = postData.data ? postData.data.issues.nodes.slice(-1).pop() : null
+    issues = issues.concat(postData.data ? postData.data.issues.nodes : []);
+    const latestAfter = postData.data
+      ? postData.data.issues.nodes.slice(-1).pop()
+      : null;
 
     /*
      * I think Linear's API has a bug
@@ -64,18 +72,19 @@ async function exportDataFromLinear() {
      * so when we see the same one twice, we're done
      */
     if (latestAfter.id === after.id || !latestAfter) {
-      break
+      break;
     }
 
-    after = latestAfter
+    after = latestAfter;
   }
 
   const csv = template(
-    issues
-      .filter(issue => issue.state.name !== `Done` && issue.state.name !== `Cancelled`)
-  )
-  
-  await fs.writeFile(`data.csv`, csv, 'utf8')
+    issues.filter(
+      issue => issue.state.name !== `Done` && issue.state.name !== `Cancelled`
+    )
+  );
+
+  await fs.writeFile(`data.csv`, csv, 'utf8');
 }
 
-exportDataFromLinear()
+exportDataFromLinear();
