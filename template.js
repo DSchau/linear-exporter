@@ -34,7 +34,6 @@ module.exports = issues =>
   stripIndent(`
 project_id,name,story_type,description
 ${issues
-  .filter(issue => getProjectId(issue) === 3)
   .map(issue =>
     [
       getProjectId(issue), // Automated import project

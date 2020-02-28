@@ -1,6 +1,8 @@
 require('dotenv').config();
 const axios = require('axios');
 const fs = require('fs-extra');
+const limax = require('limax')
+const path = require('path')
 
 const template = require('./template');
 
@@ -34,6 +36,7 @@ async function exportDataFromLinear() {
   `;
   let after = {};
   let issues = [];
+
   while (true) {
     const { data: postData } = await axios.post(
       `https://api.linear.app/graphql`,
@@ -78,13 +81,49 @@ async function exportDataFromLinear() {
     after = latestAfter;
   }
 
-  const csv = template(
-    issues.filter(
-      issue => issue.state.name !== `Done` && issue.state.name !== `Cancelled`
-    )
-  );
+  const teams = issues
+  .reduce((merged, issue) => {
+    const teamName = limax(issue.team.name)
+    const projectName = limax(issue.project ? issue.project.name : `unassigned`)
+    if (!merged[teamName]) {
+      merged[teamName] = {}
+    }
 
-  await fs.writeFile(`data.csv`, csv, 'utf8');
+    if (!merged[teamName][projectName]) {
+      merged[teamName][projectName] = []
+    }
+
+    if (issue.state.name !== `Done` && issue.state.name !== `Cancelled`) {
+      merged[teamName][projectName].push(Object.assign({}, issue, {
+        project: Object.assign(issue.project || {}, {
+          name: projectName
+        })
+      }))
+    }
+
+    return merged
+  }, {})
+
+  await Promise.all(
+    Object.keys(teams)
+      .map(teamName => {
+        const projects = teams[teamName]
+
+        return Promise.all(
+          Object.keys(projects)
+            .map(projectName => {
+              const project = projects[projectName]
+              return fs.mkdirp(path.join('data', teamName))
+                .then(() => {
+                  return fs.writeFile(
+                    path.join('data', teamName, `${projectName}.csv`),
+                    template(project, 'utf8')
+                  )
+                })
+            })
+        )
+      })
+  )
 }
 
 exportDataFromLinear();
