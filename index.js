@@ -42,6 +42,7 @@ async function exportDataFromLinear() {
           ${issueFragment}
           children {
             nodes {
+              # note, we're not really using these yet
               ${issueFragment}
             }
           }
@@ -54,7 +55,7 @@ async function exportDataFromLinear() {
       } 
     })
 
-    issues = issues.concat(postData.data ? postData.data.issues.nodes.filter(node => node.state.name !== `Done`) : [])
+    issues = issues.concat(postData.data ? postData.data.issues.nodes : [])
     const latestAfter = postData.data ? postData.data.issues.nodes.slice(-1).pop() : null
 
     /*
@@ -69,7 +70,10 @@ async function exportDataFromLinear() {
     after = latestAfter
   }
 
-  const csv = template(issues)
+  const csv = template(
+    issues
+      .filter(issue => issue.state.name !== `Done` && issue.state.name !== `Cancelled`)
+  )
   
   await fs.writeFile(`data.csv`, csv, 'utf8')
 }

@@ -15,14 +15,14 @@ const getIssueType = issue => {
   return lookup[type] || lookup.fallback
 }
 
-const sanitize = (str = ``) => `"${str.replace(/"/g, `'`).replace(/\n/g, '\\n')}"`
+const sanitize = (str = ``) => `"${str.replace(/"/g, `'`)}"`
 
 const getProjectId = issue => {
   const lookup = {
     'Cloud Platform': 3,
-    'SS CMS': 4,
-    'SS Off By One': 4,
-    'Boaty McBuildFace': 4,
+    'SS CMS': 138,
+    'SS Off by One': 136,
+    'Boaty McBuildFace': 137,
     fallback: 74
   }
 
@@ -31,8 +31,10 @@ const getProjectId = issue => {
 
 module.exports = issues => stripIndent(`
 project_id,name,story_type,description
-${issues.map(issue => [
-  74, // getProjectId(issue), // Automated import project
+${issues
+  .filter(issue => getProjectId(issue) !== 3)
+  .map(issue => [
+  getProjectId(issue), // Automated import project
   sanitize(issue.title),
   getIssueType(issue),
   sanitize(issue.description || ``)
