@@ -64,8 +64,6 @@ async function exportDataFromLinear() {
     after = latestAfter
   }
 
-  console.log(issues.length)
-
   const csv = template(issues)
   
   await fs.writeFile(`data.csv`, csv, 'utf8')
