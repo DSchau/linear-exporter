@@ -57,6 +57,11 @@ async function exportDataFromLinear() {
     issues = issues.concat(postData.data ? postData.data.issues.nodes.filter(node => node.state.name !== `Done`) : [])
     const latestAfter = postData.data ? postData.data.issues.nodes.slice(-1).pop() : null
 
+    /*
+     * I think Linear's API has a bug
+     * It "loops" on the last id with first: 50
+     * so when we see the same one twice, we're done
+     */
     if (latestAfter.id === after.id || !latestAfter) {
       break
     }
