@@ -21,6 +21,8 @@ const getProjectId = issue => {
   const lookup = {
     'Cloud Platform': 3,
     'Core Team': 4,
+    'Design': 677,
+    'Learning': 2,
     'SS CMS': 138,
     'SS Off by One': 136,
     'Boaty McBuildFace': 137,
