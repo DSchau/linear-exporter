@@ -93,7 +93,7 @@ async function exportDataFromLinear() {
       merged[teamName][projectName] = []
     }
 
-    if (issue.state.name !== `Done` && issue.state.name !== `Cancelled`) {
+    if (issue.state.name !== `Done` && issue.state.name !== `Canceled`) {
       merged[teamName][projectName].push(Object.assign({}, issue, {
         project: Object.assign(issue.project || {}, {
           name: projectName
